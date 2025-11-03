@@ -52,12 +52,12 @@ export function renderSummary(data, filename) {
 export function renderPlayers(data) {
   const entries = Object.entries(state.players);
   const totalPlayers = entries.length;
-  const countLabel = totalPlayers === 1 ? 'zaidejas' : 'zaidejai';
+  const countLabel = totalPlayers === 1 ? 'žaidejas' : 'žaidejai';
   dom.playerCount.textContent = `${totalPlayers} ${countLabel}`;
 
   if (!totalPlayers) {
     dom.playerGrid.className = 'emptyState';
-    dom.playerGrid.textContent = 'Zaideju nera.';
+    dom.playerGrid.textContent = 'žaideju nera.';
     return;
   }
 
