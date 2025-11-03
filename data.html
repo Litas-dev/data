@@ -1,0 +1,466 @@
+﻿<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KQuiz �urnalo per�iura</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg:#11131a;
+    --panel:#181c27;
+    --accent:#4ea1ff;
+    --border:#202636;
+    --muted:#8b94a6;
+    --text:#f1f4ff;
+    --danger:#ff6f6f;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font:14px/1.5 "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  header {
+    padding:16px 20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+  }
+  header .inputs {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .uploadLabel {
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:var(--accent);
+    color:#071524;
+    padding:10px 16px;
+    border-radius:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform .15s ease;
+  }
+  .uploadLabel:hover { transform:translateY(-1px); }
+  .uploadLabel input { display:none; }
+  #dropZone {
+    border:1px dashed var(--border);
+    padding:10px 16px;
+    border-radius:12px;
+    color:var(--muted);
+    background:rgba(25,29,40,0.6);
+    transition:border-color .2s ease, color .2s ease;
+  }
+  #dropZone.is-drag {
+    border-color:var(--accent);
+    color:var(--accent);
+  }
+  #statusMessage {
+    font-size:13px;
+    color:var(--muted);
+  }
+  main {
+    flex:1;
+    padding:24px 20px 60px;
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+    width:min(1200px, 100%);
+    margin:0 auto;
+  }
+  .panel {
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .panel-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .panel-header h2 {
+    margin:0;
+    font-size:18px;
+    font-weight:700;
+  }
+  .badge {
+    background:rgba(78,161,255,0.18);
+    border:1px solid rgba(78,161,255,0.5);
+    color:var(--accent);
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+  }
+  #summaryGrid {
+    display:grid;
+    gap:12px;
+    grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+  }
+  .summaryCard {
+    background:rgba(19,23,34,0.8);
+    border:1px solid rgba(45,53,73,0.9);
+    border-radius:14px;
+    padding:12px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .summaryCard .label {
+    font-size:12px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .summaryCard .value {
+    font-size:18px;
+    font-weight:700;
+    color:var(--text);
+  }
+  #playerGrid {
+    display:grid;
+    gap:16px;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+  }
+  .playerCard {
+    background:rgba(12,16,25,0.85);
+    border:1px solid rgba(40,46,62,0.9);
+    border-radius:14px;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-height:180px;
+    cursor:pointer;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .playerCard:hover { border-color:rgba(78,161,255,0.6); box-shadow:0 8px 24px rgba(0,0,0,0.25); }
+  .playerCard.expanded { border-color:var(--accent); box-shadow:0 12px 32px rgba(15,40,75,0.45); }
+  .playerHeader {
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .avatar {
+    width:48px;
+    height:48px;
+    border-radius:12px;
+    background:rgba(31,38,53,0.9);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size:18px;
+    color:var(--accent);
+    overflow:hidden;
+  }
+  .avatar img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .playerSummary {
+    display:grid;
+    gap:6px;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .playerSummary strong {
+    color:var(--text);
+    font-weight:600;
+  }
+  .playerSummary .hint {
+    font-size:11px;
+    color:rgba(255,255,255,0.45);
+  }
+  .statsGrid {
+    display:grid;
+    gap:6px;
+    grid-template-columns:repeat(auto-fit, minmax(120px,1fr));
+    font-size:12px;
+  }
+  .statsCell {
+    background:rgba(24,29,44,0.9);
+    border:1px solid rgba(33,41,56,0.8);
+    border-radius:10px;
+    padding:8px;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .statsCell span:nth-child(1) { color:var(--muted); font-size:11px; }
+  .statsCell span:nth-child(2) { font-weight:600; color:var(--text); }
+  .playerModalOverlay {
+    position:fixed;
+    inset:0;
+    background:rgba(6,10,20,0.82);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:200;
+    padding:24px;
+  }
+  .playerModalOverlay.visible { display:flex; }
+  .playerModalCard {
+    width:min(720px, 95vw);
+    max-height:90vh;
+    overflow:auto;
+    background:rgba(14,19,34,0.97);
+    border:1px solid rgba(63,104,178,0.6);
+    border-radius:20px;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    box-shadow:0 24px 80px rgba(0,0,0,0.5);
+  }
+  .playerModalClose {
+    align-self:flex-end;
+    background:rgba(78,161,255,0.18);
+    color:var(--accent);
+    border:1px solid rgba(78,161,255,0.45);
+    border-radius:10px;
+    padding:8px 14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .playerModalClose:hover { background:rgba(78,161,255,0.26); }
+  .playerModalHeader {
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .playerModalHeader .avatar {
+    width:72px;
+    height:72px;
+    font-size:28px;
+  }
+  .playerModalHeader h3 {
+    margin:0;
+    font-size:26px;
+    font-weight:800;
+    color:var(--text);
+  }
+  .modalStatsGrid {
+    display:grid;
+    gap:10px;
+    grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+  }
+  .modalSection {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .modalSection h4 {
+    margin:0;
+    font-size:18px;
+    font-weight:700;
+    color:var(--text);
+  }
+  .modalTableWrap {
+    border-radius:12px;
+    border:1px solid rgba(35,41,55,0.9);
+    overflow:auto;
+  }
+  .modalTableWrap table {
+    min-width:520px;
+  }
+  .tableWrap {
+    overflow:auto;
+    border-radius:12px;
+    border:1px solid rgba(35,41,55,0.9);
+  }
+  table {
+    width:100%;
+    border-collapse:collapse;
+    min-width:640px;
+    font-size:13px;
+  }
+  thead { background:rgba(25,30,44,0.9); }
+  th, td {
+    padding:10px 12px;
+    border-bottom:1px solid rgba(33,41,59,0.8);
+    text-align:left;
+  }
+  th { font-weight:600; color:var(--muted); text-transform:uppercase; font-size:12px; }
+  tbody tr:nth-child(even) { background:rgba(18,22,32,0.55); }
+  .miniSection {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    border:1px solid rgba(36,42,58,0.8);
+    border-radius:12px;
+    padding:14px;
+    background:rgba(15,19,28,0.8);
+  }
+  .miniHeader {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .miniHeader h3 { margin:0; font-size:16px; font-weight:600; }
+  .chip {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:rgba(78,161,255,0.15);
+    color:var(--accent);
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+  }
+  .miniTable {
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+  }
+  .miniTable th, .miniTable td {
+    border-bottom:1px solid rgba(34,41,58,0.6);
+    padding:8px 10px;
+    text-align:left;
+  }
+  .miniTable th { color:var(--muted); text-transform:uppercase; font-size:11px; }
+  .emptyState {
+    text-align:center;
+    padding:24px;
+    color:var(--muted);
+    font-size:13px;
+  }
+  @media (max-width:700px) {
+    header { flex-direction:column; align-items:flex-start; }
+    .panel { padding:14px; }
+  }
+  /* Visiškai paslėpti „Suvestinė“, „Pagrindiniai klausimai“ ir „Mini žaidimai“ */
+.panel:has(#summaryGrid),
+.panel:has(#questionBody),
+.panel:has(#miniContainer) {
+  display: none !important;
+}
+/* Rodyti tik viršutinę kortelės dalį (avataras + vardas + užuomina) */
+.playerCard .statsGrid { 
+  display: none !important;
+}
+
+/* Kompaktinis aukštis ir tarpai */
+.playerCard { 
+  min-height: auto !important;
+  padding: 12px 12px !important;
+}
+
+/* Šiek tiek didesnis header, kad būtų „tikslo zona“ spaudimui */
+.playerHeader { 
+  min-height: 68px;
+}
+
+/* Patogesnis paspaudimas telefone */
+.playerCard:hover { 
+  border-color: rgba(78,161,255,0.8);
+}
+
+/* Jei nori dar labiau sutraukti, gali ir užuominą paslėpti: */
+.playerSummary .hint { 
+  display: none !important; 
+}
+/* Paslėpti įkėlimo juostą (Atidaryk JSON, Nuvilk, Failas įkeltas) */
+header {
+  display: none !important;
+}
+/* Rodyti tik žaidėjo paveikslėlį ir vardą, be laiko */
+.playerSummary span:not(:first-child) {
+  display: none !important;
+}
+
+</style>
+
+</head>
+
+<body>
+  <header>
+    <div class="inputs">
+      <label class="uploadLabel">
+        <input type="file" id="fileInput" accept="application/json" />
+        <span>Atidaryk JSON �urnala</span>
+      </label>
+      <div id="dropZone">Nuvilk JSON momentine kopija cia</div>
+    </div>
+    <div id="statusMessage">Failas neikeltas</div>
+  </header>
+  <main>
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Suvestine</h2>
+        <span id="summaryMeta" class="badge">Momentine kopija</span>
+      </div>
+      <div id="summaryGrid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Zaidejai</h2>
+        <span id="playerCount" class="badge">0 �aideju</span>
+      </div>
+      <div id="playerGrid" class="emptyState">Ikelkite �urnala ir matysite �aidejus.</div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Pagrindiniai klausimai</h2>
+        <span id="questionCount" class="badge">0</span>
+      </div>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Klausimo ID</th>
+              <th>Teisingas variantas</th>
+              <th>I� viso atsakymu</th>
+              <th>Teisingi atsakymai</th>
+              <th>Pirmas atsakymas</th>
+              <th>Greiciausias teisingas</th>
+            </tr>
+          </thead>
+          <tbody id="questionBody">
+            <tr><td colspan="7" class="emptyState">Duomenu kol kas nera.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Mini �aidimai</h2>
+      </div>
+      <div id="miniContainer" class="emptyState">Mini �aidimu duomenu nera.</div>
+    </section>
+  </main>
+
+  <div id="playerModal" class="playerModalOverlay">
+    <div class="playerModalCard">
+      <button class="playerModalClose" data-act="close-modal">U�daryti</button>
+      <div data-role="modal-body"></div>
+    </div>
+  </div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
