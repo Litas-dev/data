@@ -143,7 +143,7 @@ function attachListeners() {
 }
 
 // Auto-load JSON from GitHub
-const AUTO_JSON_URL = 'https://raw.githubusercontent.com/Litas-dev/data/refs/heads/main/kqlog-2025-11-02-215203.json';
+const AUTO_JSON_URL = 'https://raw.githubusercontent.com/Litas-dev/data/refs/heads/main/kqlog-2025-11-03-174801.json';
 
 (async () => {
   try {
