@@ -388,6 +388,41 @@ header {
 .playerSummary span:not(:first-child) {
   display: none !important;
 }
+/* Tik telefonams (maks. 700px pločio) */
+@media (max-width: 700px) {
+  /* paslėpti vardus ir tekstą */
+  .playerSummary { display: none !important; }
+
+  /* 4 avatarų stulpeliai */
+  #playerGrid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* mažos kvadratinės kortelės */
+  .playerCard {
+    padding: 4px !important;
+    min-height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* avataras užpildo visą kortelę */
+  .playerCard .avatar {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+  }
+
+  .playerCard .avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+}
 
 </style>
 
